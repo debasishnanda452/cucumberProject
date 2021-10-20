@@ -3,8 +3,11 @@ package pageObjects;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TestScriptDemoPage extends BaseClass {
 
@@ -44,27 +47,48 @@ public class TestScriptDemoPage extends BaseClass {
     public void selectWishListMenu() {
         clickElement(WISHLIST_ICON);
     }
+    
+    //get the text of object
+    //extract all numbers and store it in a list for a single object
+    //find minimum value from above list
+    //pass above value to another list
+    //find minimum
+    
+    @SuppressWarnings("null")
+	public List<Double> getAllPriceFromSingleObject(WebElement element)
+    {
+    	String objectText=element.getText();
+    	System.out.println("object txt 1 is"+objectText);
+    	objectText = objectText.replaceAll("[^.-?0-9]+", " "); 
+    	System.out.println("object txt is"+objectText);
+        System.out.println(Arrays.asList(objectText.trim().split(" ")));
+        	List<String> list1=Arrays.asList(objectText.trim().split(" "));
+    	List<Double> allPrice =  list1.stream().map(s -> Double.parseDouble(s)).collect(Collectors.toList());
+    	
+    	System.out.println(allPrice);
+    	
+    	
+    	return allPrice;
+    }
+    
+    public double findMinimuminList(List<Double> allPrice )
+    {
+    	double minimumPriceOfSingleElement=Collections.min(allPrice);
+    	System.out.println("Minimum value is "+minimumPriceOfSingleElement);
+    	return minimumPriceOfSingleElement;
+    	
+    }
 
     public void addProductToCart() {
         List<WebElement> prices = getElements(WISHLIST_PRICE);
+        //List<Integer> allMinimumPrices=null;
         String[] record;
         String text = "";
         for (WebElement element : prices) {
-            text = element.getText();
-            if (text.split("£").length > 1) {
-                if (text.contains("–"))
-                    text = text.substring(0, text.indexOf("–"));
-
-                else {
-                    record = text.split("£");
-                    text = record[2];
-                }
-                text = text.replaceAll("£", "");
-
-            } else {
-                text = text.replace("£", "");
-            }
-            list.add(Double.parseDouble(text));
+        	List<Double> requiredallPriceFromSingleObject=getAllPriceFromSingleObject(element);
+        	Double minimumValueOfSingleObject=findMinimuminList(requiredallPriceFromSingleObject);
+        	list.add(minimumValueOfSingleObject);
+        	
         }
 
         clickElement(getElement(By.xpath(ADD_TO_CART_OPTION.replace("{}",
@@ -75,8 +99,8 @@ public class TestScriptDemoPage extends BaseClass {
         return getElements(WISHLIST_RECORDS).size();
     }
 
-    private int getMinPriceIndex(List<Double> records) {
-        return records.indexOf(Collections.min(records)) + 1;
+    private double getMinPriceIndex(List<Double> list2) {
+        return list2.indexOf(Collections.min(list2)) + 1;
     }
 
     public String getCartMessage() {
